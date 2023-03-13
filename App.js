@@ -1,8 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from './color';
+import { Feather } from '@expo/vector-icons';
 
 const STORAGE_KEY = 'toDos';
 
@@ -18,6 +27,7 @@ export default function App() {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   };
   const loadToDos = async () => {
+    // try, catch문 넣어주기
     const toDoStr = await AsyncStorage.getItem(STORAGE_KEY);
     setToDos(JSON.parse(toDoStr));
   };
@@ -30,6 +40,21 @@ export default function App() {
     setToDos(newToDos);
     await saveToDos(newToDos);
     setText('');
+  };
+  const deleteToDo = async (key) => {
+    Alert.alert('Delete To Do', 'Are you sure?', [
+      { text: 'Cancel' },
+      {
+        text: 'Im sure',
+        style: 'destructive',
+        onPress: () => {
+          const newToDos = { ...toDos };
+          delete newToDos[key];
+          setToDos(newToDos);
+          saveToDos(newToDos);
+        },
+      },
+    ]);
   };
 
   return (
@@ -52,10 +77,14 @@ export default function App() {
         style={styles.input}
       />
       <ScrollView>
+        {/* 로딩스피너 이용해서 데이터 받아오면 띄워주기 */}
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
             <View key={key} style={styles.toDo}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <Feather name='trash-2' size={20} color={theme.grey} />
+              </TouchableOpacity>
             </View>
           ) : null
         )}
@@ -94,6 +123,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   toDoText: {
     color: 'white',
