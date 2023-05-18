@@ -1,6 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { theme } from './colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,7 +38,21 @@ const YourApp = () => {
     setTodos(newToDos);
     await saveToDos(newToDos); // 새로운 오브젝트를 saveToDo에도 넣어줌
     setText('');
-    // savetodo
+  };
+  const deleteToDo = (key) => {
+    Alert.alert('Delete To Do?', 'Are you sure?', [
+      { text: 'Cancel' },
+      {
+        text: 'I am Sure',
+        onPress: () => {
+          const newToDos = { ...todos };
+          delete newToDos[key];
+          setTodos(newToDos);
+          saveToDos(newToDos);
+        },
+      },
+    ]);
+    return;
   };
 
   useEffect(() => {
@@ -61,6 +83,9 @@ const YourApp = () => {
           todos[key].work === doing ? (
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{todos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <Text>❌</Text>
+              </TouchableOpacity>
             </View>
           ) : null
         )}
@@ -101,6 +126,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   toDoText: {
     color: theme.white,
