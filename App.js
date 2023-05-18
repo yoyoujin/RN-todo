@@ -1,8 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { theme } from './colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STRAGE_KEY = '@todos';
 
 const YourApp = () => {
   const [doing, setDoing] = useState(true);
@@ -11,14 +13,30 @@ const YourApp = () => {
   const task = () => setDoing(false);
   const todo = () => setDoing(true);
   const onChangeText = (payload) => setText(payload);
-  const addToDo = () => {
+  const saveToDos = async (toSave) => {
+    try {
+      await AsyncStorage.setItem(STRAGE_KEY, JSON.stringify(toSave));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const loadToDos = async () => {
+    const s = await AsyncStorage.getItem(STRAGE_KEY);
+    setTodos(JSON.parse(s));
+  };
+  const addToDo = async () => {
     if (text === '') return;
     const newToDos = { ...todos, [Date.now()]: { text, work: doing } };
     setTodos(newToDos);
+    await saveToDos(newToDos); // 새로운 오브젝트를 saveToDo에도 넣어줌
     setText('');
     // savetodo
   };
-  console.log(todos);
+
+  useEffect(() => {
+    loadToDos();
+  }, []);
+
   return (
     <View style={styles.container}>
       <StatusBar style='auto' />
